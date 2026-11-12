@@ -1,0 +1,15 @@
+[project]
+name = "experiments"
+version = "0.1.0"
+description = "Small deep learning experiments, written up as notebooks."
+requires-python = ">=3.12"
+dependencies = [
+    "graphviz",
+    "ipykernel",
+    "jupyterlab",
+    "latex2mathml",
+    "matplotlib",
+    "nbclient",
+    "nbformat",
+    "numpy",
+]
