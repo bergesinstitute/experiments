@@ -35,7 +35,7 @@ DEFAULT_WEBSITE = ROOT.parent / "berges-website"
 IMAGE_URL = "/img/experiments"
 
 REQUIRED_KEYS = ("title", "description", "published")
-OPTIONAL_KEYS = ("updated", "draft")
+OPTIONAL_KEYS = ("updated", "draft", "guides")
 CELL_OPTIONS = ("include", "echo", "alt", "caption", "name")
 
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -94,6 +94,9 @@ def export(path: Path, website: Path, execute: bool) -> None:
         except Exception as error:
             raise ExportError(f"the notebook failed to run:\n{error}") from error
         finally:
+            # nbclient leaves a kernel it was handed running, so stop it here.
+            if manager.has_kernel:
+                manager.shutdown_kernel()
             shutil.rmtree(sockets, ignore_errors=True)
         nbformat.write(notebook, path)
 
@@ -150,6 +153,11 @@ def read_frontmatter(notebook) -> tuple[dict[str, str], list]:
             raise ExportError(f"{key} must be a YYYY-MM-DD date")
     if meta.get("draft", "false") not in ("true", "false"):
         raise ExportError("draft must be true or false")
+    if "guides" in meta:
+        guides = [guide.strip() for guide in meta["guides"].split(",")]
+        if not all(SLUG.fullmatch(guide) for guide in guides):
+            raise ExportError("guides must be a comma-separated list of guide slugs")
+        meta["guides"] = ", ".join(guides)
 
     return meta, cells[1:]
 
@@ -160,6 +168,8 @@ def frontmatter_block(meta: dict[str, str], notebook_url: str) -> str:
         lines.append(f"updated: {meta['updated']}")
     if meta.get("draft") == "true":
         lines.append("draft: true")
+    if meta.get("guides"):
+        lines.append(f"guides: {meta['guides']}")
     lines.append(f"notebook: {notebook_url}")
 
     return "---\n" + "\n".join(lines) + "\n---\n\n"

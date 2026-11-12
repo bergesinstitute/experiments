@@ -31,7 +31,7 @@ draft: true
 ---
 ```
 
-`updated` and `draft` are optional. Drafts show on a local site only.
+`updated`, `draft` and `guides` are optional. Drafts show on a local site only. `guides` is a comma-separated list of berges.ai guide slugs (for example `backpropagation, how-a-neural-network-works`); those guide pages then link back to the experiment.
 
 Markdown cells:
 
